@@ -1,9 +1,9 @@
-require('dotenv').config();
-const { ENDPOINT, TOKEN } = process.env;
+require('dotenv').config()
+const { ENDPOINT, TOKEN } = process.env
 
 if (!ENDPOINT || !TOKEN) {
   console.error('ERROR: Failed to load ENDPOINT and TOKEN values from .env file.')
-  process.exit(1);
+  process.exit(1)
 }
 
 const headers = {

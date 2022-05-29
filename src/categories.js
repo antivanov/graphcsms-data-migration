@@ -1,7 +1,7 @@
-const { postMutation } = require('./util/mutation');
-const csv = require('csvtojson');
+const { postMutation } = require('./util/mutation')
+const csv = require('csvtojson')
 
-const categoriesCreateMutation = `
+const categoryCreateMutation = `
   mutation CreateCategory( $name: String! ) {
     createCategory(data: {
       name: $name
@@ -13,7 +13,7 @@ const categoriesCreateMutation = `
   }
 `
 
-const categoriesPublishMutation = `
+const categoryPublishMutation = `
   mutation PublishCategory( $id: ID ) {
     publishCategory(where: {
       id: $id
@@ -27,23 +27,23 @@ const categoriesPublishMutation = `
 
 // Upload Data to GraphCMS Project Database
 async function uploadCategories(){
-  const rows = await csv().fromFile('./data/categories.csv');
-  console.log(`Uploading ${rows.length} categories...`);
-  rows.map(async row => {
-    const createResult = await postMutation(JSON.stringify({
-      query: categoriesCreateMutation,
+  const rows = await csv().fromFile('./data/categories.csv')
+  console.log(`Uploading ${rows.length} categories...`)
+
+  return Promise.all(rows.map(async row => {
+    const createResult = await postMutation({
+      query: categoryCreateMutation,
       variables: row
-    }))
+    })
     const categoryId = createResult.createCategory.id
-    const publishResult = await postMutation(JSON.stringify({
-      query: categoriesPublishMutation,
+    const publishResult = await postMutation({
+      query: categoryPublishMutation,
       variables: {
         id: categoryId
       }
-    }))
+    })
     return publishResult
-  })
-  return true;
+  }))
 }
 
 uploadCategories();

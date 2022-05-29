@@ -1,8 +1,5 @@
-const { ENDPOINT, headers} = require('./config');
-const csv = require('csvtojson');
-const fetch = require('isomorphic-fetch');
-
-let categories;
+const csv = require('csvtojson')
+const { postMutation, fetchByQuery } = require('./util/mutation')
 
 const categoriesQuery= `{
   categories {
@@ -11,30 +8,10 @@ const categoriesQuery= `{
   }
 }`
 
-async function fetchCategories() {
-  try {
-    const response = await fetch(ENDPOINT, {
-      headers: headers,
-      method: 'POST',
-      body: JSON.stringify({
-        query: categoriesQuery
-      })
-    });
 
-    // Parse the response to verify success
-    const body = await response.json()
-    const data = await body.data
-    return data.categories;
-  } catch (error) {
-    console.log("Error!", error);
-    process.exit(1);
-  }
-}
-
-const postMutation = `
+const postCreateMutation = `
   mutation CreatePost( $title: String!, $content: String!, $slug: String!, $categories: [CategoryWhereUniqueInput!]) {
     createPost(data: {
-      status: PUBLISHED
       title: $title
       content: $content
       slug: $slug
@@ -49,45 +26,36 @@ const postMutation = `
   }
 `
 
-function getCategoryByName(name) {
+function getCategoryByName(categories, name) {
   return categories.find(category => (category.name === name))
 }
 
+async function fetchCategories() {
+  return (await fetchByQuery({
+    query: categoriesQuery
+  })).categories
+}
+
 async function uploadPosts() {
-  categories = await fetchCategories();
-  const rows = await csv().fromFile('./data/posts.csv');
-  console.log(`Uploading ${rows.length} posts...`);
-  rows.map(async row => {
+  let categories = await fetchCategories();
+  const rows = await csv().fromFile('./data/posts.csv')
+  console.log(`Uploading ${rows.length} posts...`)
+  return Promise.all(rows.map(async row => {
     const rowCats = row.categories.split("|")
-    const formattedCats = rowCats.map(cat => {
-      const id = getCategoryByName(cat).id
+    const categoryIds = rowCats.map(categoryName => {
+      const id = getCategoryByName(categories, categoryName).id
       return { "id": id}
-    });
-    const formattedObj = {
-      ...row,
-      categories: formattedCats
-    }
-    try {
-      const response = await fetch(ENDPOINT, {
-        headers,
-        method: 'POST',
-        body: JSON.stringify({
-          query: postMutation,
-          variables: formattedObj
-        })
-      });
-
-      // Parse the response to verify success
-      const body = await response.json()
-      const data = await body.data
-
-      console.log('Uploaded', data);
-      return data;
-    } catch (error) {
-      console.log("Error!", error);
-      process.exit(1);
-    }
-  })
+    })
+    const createResult = await postMutation({
+      query: postCreateMutation,
+      variables: {
+        ...row,
+        categories: categoryIds
+      }
+    })
+    //TODO: Also publish the created post
+    return createResult
+  }))
 }
 
 uploadPosts();
