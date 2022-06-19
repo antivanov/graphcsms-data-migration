@@ -81,7 +81,7 @@ async function uploadPosts() {
   }))
 }
 
-uploadPosts();
+uploadPosts()
 
 module.exports = {
   uploadPosts

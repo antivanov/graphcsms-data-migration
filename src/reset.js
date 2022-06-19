@@ -1,59 +1,55 @@
-const { ENDPOINT, headers } = require('./config');
-const fetch = require('isomorphic-fetch');
+const { postMutation } = require('./util/mutation')
 
-// Comments Reset Mutation
-const commentsMutation = `
+const deleteAllCommentsMutation = `
   mutation DeleteAllComments {
-    deleteManyComments(where: {
-      status: PUBLISHED
-    })
+    deleteManyCommentsConnection()
     {
-      count
+      edges {
+        node {
+          id
+        }
+      }
     }
   }`;
 
-// Posts Reset Mutation
-const postsMutation = `
+const deleteAllPostsMutation = `
   mutation DeleteAllPosts {
-    deleteManyPosts(where: {
-      status: PUBLISHED
-    })
+    deleteManyPostsConnection()
     {
-      count
+      edges {
+        node {
+          id
+        }
+      }
     }
   }`;
 
-// Categories Reset Mutation
-const categoriesMutation = `
+const deleteAllCategoriesMutation = `
   mutation DeleteAllCategories {
-    deleteManyCategories(where: {
-      status: PUBLISHED
-    })
+    deleteManyCategoriesConnection()
     {
-      count
+      edges {
+        node {
+          id
+        }
+      }
     }
   }`;
 
-async function deleteModel(mutation) {
-  try {
-    const response = await fetch(ENDPOINT, {
-      headers,
-      method: 'POST',
-      body: JSON.stringify({
-        query: mutation
-      })
-    });
-
-    // Parse the response to verify success
-    const body = await response.json()
-    const data = await body.data
-
-    console.log('Deleted', data)
-  } catch (error) {
-    console.log("Error!", error)
-  }
+async function reset() {
+  await postMutation({
+    query: deleteAllCommentsMutation
+  })
+  await postMutation({
+    query: deleteAllPostsMutation
+  })
+  await postMutation({
+    query: deleteAllCategoriesMutation
+  })
 }
 
-deleteModel(commentsMutation);
-deleteModel(postsMutation);
-deleteModel(categoriesMutation);
+reset()
+
+module.exports = {
+  reset
+}

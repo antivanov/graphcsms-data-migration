@@ -45,7 +45,7 @@ async function uploadCategories(){
   }))
 }
 
-uploadCategories();
+uploadCategories()
 
 module.exports = {
   uploadCategories

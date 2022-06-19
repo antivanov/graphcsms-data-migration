@@ -18,6 +18,7 @@ async function postMutation(mutationBody) {
     }
     return data
   } catch (error) {
+    console.log(body)
     console.log("Error!", error)
     process.exit(1)
   }
@@ -34,6 +35,7 @@ async function fetchByQuery(queryBody) {
     const body = await response.json()
     return await body.data
   } catch (error) {
+    console.log(body)
     console.log("Error!", error)
     process.exit(1)
   }
