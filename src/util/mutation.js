@@ -26,7 +26,7 @@ async function postMutation(mutationBody) {
 async function fetchByQuery(queryBody) {
   try {
     const response = await fetch(ENDPOINT, {
-      headers: headers,
+      headers,
       method: 'POST',
       body: JSON.stringify(queryBody)
     })

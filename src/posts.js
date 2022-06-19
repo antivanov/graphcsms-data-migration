@@ -26,6 +26,23 @@ const postCreateMutation = `
   }
 `
 
+const postPublishMutation = `
+  mutation PublishPost( $id: ID ) {
+    publishPost(where: {
+      id: $id
+    }, to: PUBLISHED)
+    {
+      id
+      title
+      content
+      slug
+      categories {
+        id
+      }
+    }
+  }
+`
+
 function getCategoryByName(categories, name) {
   return categories.find(category => (category.name === name))
 }
@@ -53,8 +70,14 @@ async function uploadPosts() {
         categories: categoryIds
       }
     })
-    //TODO: Also publish the created post
-    return createResult
+    const postId = createResult.createPost.id
+    const publishResult = await postMutation({
+      query: postPublishMutation,
+      variables: {
+        id: postId
+      }
+    })
+    return publishResult
   }))
 }
 

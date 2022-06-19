@@ -25,7 +25,6 @@ const categoryPublishMutation = `
   }
 `
 
-// Upload Data to GraphCMS Project Database
 async function uploadCategories(){
   const rows = await csv().fromFile('./data/categories.csv')
   console.log(`Uploading ${rows.length} categories...`)
